@@ -1,4 +1,4 @@
- create language plpythonu;
+create language plpythonu;
 
 -- Step#1. read csv file and make a temporary table
 create or replace function load_csv_file
@@ -56,7 +56,7 @@ except plpy.SPIError, e:
    plpy.error("Exception occured: %s" % str(e))
 $$ language plpythonu;
 
--- Step#2-1. Load data from the temp table and pull them into a graph 
+-- Step#2-1. Load data from the temp table and pull them into a graph
 -- [20171227]Schema parameter added
 create or replace function csv_to_edge
 (
@@ -103,7 +103,7 @@ try:
         cur2.execute("ALTER TABLE temp_table ALTER COLUMN "+col_n_type[0]+" TYPE INTEGER USING (trim("+col_n_type[0]+")::integer)")
      elif col_n_type[1].lower() == 'float':
         cur2.execute("ALTER TABLE temp_table ALTER COLUMN "+col_n_type[0]+" TYPE FLOAT USING (trim("+col_n_type[0]+")::float)")
-    
+
    edge_query = "LOAD FROM temp_table AS t "+edge_query+" CREATE (a)-[:"+label_name+"]->(b)"
    cur2.execute("SET graph_path="+graph_path)
    cur2.execute(edge_query)
@@ -163,7 +163,7 @@ try:
         cur2.execute("ALTER TABLE temp_table ALTER COLUMN "+col_n_type[0]+" TYPE INTEGER USING (trim("+col_n_type[0]+")::integer)")
      elif col_n_type[1].lower() == 'float':
         cur2.execute("ALTER TABLE temp_table ALTER COLUMN "+col_n_type[0]+" TYPE FLOAT USING (trim("+col_n_type[0]+")::float)")
-    
+
    edge_query = "LOAD FROM temp_table AS t "+edge_query+" CREATE (a)-[:"+label_name+"]->(b)"
    cur2.execute("SET graph_path="+graph_path)
    cur2.execute(edge_query)

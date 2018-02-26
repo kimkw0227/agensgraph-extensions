@@ -23,25 +23,28 @@ check_table_existence()
 
 G = nx.Graph()
 query = "MATCH (n1)-[r1]->(n2) WHERE id(n1) <> id(n2) RETURN id(n1) AS node, id(n2) AS neighbor"
-
+plpy.info(query)
 try:
    conn = ag.connect(conn_string)
    cur = conn.cursor()
 
    cur.execute(query)
    while True:
-      records = cur.fetchmany(size=2000)
+      records = cur.fetchmany(size=10000)
+
       if not records:
         break
 
-      for r in records:
-        G.add_edge(r[0],r[1])
+      G.add_edges_from([tuple(r) for r in records])
 
+   plpy.info("Number of nodes: "+str(G.number_of_nodes())+", Number of edges: "+str(G.number_of_edges()))
    comp = community.girvan_newman(G, most_valuable_edge=most_central_edge)
    plpy.execute("TRUNCATE TABLE girvan_newman_result")
    plan = plpy.prepare("INSERT INTO girvan_newman_result VALUES ($1,$2)",["int","text[]"])
    cluster = 1
+
    for nodes in tuple(sorted(c) for c in next(comp)):
+      '''plpy.info("cluster_id: "+str(cluster))'''
       plpy.execute(plan, [cluster,nodes])
       cluster += 1
 
