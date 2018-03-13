@@ -8,19 +8,14 @@ returns void as $$
 import time
 import networkx as nx
 import psycopg2 as ag
-from networkx import edge_betweenness_centrality as betweenness
-from networkx.algorithms import community
+import community
 
 def check_table_existence():
-   res = plpy.execute("SELECT relname FROM pg_stat_all_tables WHERE relname='girvan_newman_result'").nrows()
+   res = plpy.execute("SELECT relname FROM pg_stat_all_tables WHERE relname='louvain_method_result'").nrows()
    if (res == 0):
-      plpy.execute("CREATE TABLE girvan_newman_result (cluster_id integer, nodes text[], primary key (cluster_id))")
+      plpy.execute("CREATE TABLE louvain_method_result (cluster_id integer, nodes text[], primary key (cluster_id))")
    else:
-      plpy.execute("TRUNCATE TABLE girvan_newman_result")
-
-def most_central_edge(G):
-   centrality = betweenness(G,weight='weight')
-   return max(centrality, key=centrality.get)
+      plpy.execute("TRUNCATE TABLE louvain_method_result")
 
 check_table_existence()
 
@@ -50,15 +45,16 @@ finally:
    conn.close()
 
 plpy.info("Number of nodes: "+str(G.number_of_nodes())+", Number of edges: "+str(G.number_of_edges()))
-comp = community.girvan_newman(G, most_valuable_edge=most_central_edge)
-plan = plpy.prepare("INSERT INTO girvan_newman_result VALUES ($1,$2)",["int","text[]"])
-cluster = 1
+
+plan = plpy.prepare("INSERT INTO louvain_method_result VALUES ($1,$2)",["int","text[]"])
+cluster = 0
 
 plpy.info("GRAPH ANALYSIS IN PROGRESS")
-for nodes in tuple(sorted(c) for c in next(comp)):
-   '''plpy.info("cluster_id: "+str(cluster))'''
-   plpy.execute(plan, [cluster,nodes])
-   cluster += 1
+partition = community.best_partition(G)
+for com in set(parition.values()):
+   cluster = cluster + 1
+   list_nodes = [nodes for nodes in partition.keys() if partition[nodes] == com]
+   plpy.execute(plan,[cluster,list_nodes])
 
 done = time.time()
 elapsed = done - start
