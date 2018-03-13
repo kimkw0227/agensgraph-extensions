@@ -51,7 +51,7 @@ cluster = 0
 
 plpy.info("GRAPH ANALYSIS IN PROGRESS")
 partition = community.best_partition(G)
-for com in set(parition.values()):
+for com in set(partition.values()):
    cluster = cluster + 1
    list_nodes = [nodes for nodes in partition.keys() if partition[nodes] == com]
    plpy.execute(plan,[cluster,list_nodes])
