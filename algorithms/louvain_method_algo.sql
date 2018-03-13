@@ -1,6 +1,6 @@
 CREATE LANGUAGE plpythonu;
 
-CREATE OR REPLACE FUNCTION girvan_newman_algo
+CREATE OR REPLACE FUNCTION louvain_method_algo
 (
    conn_string text
 )
