@@ -59,7 +59,7 @@ final_rank_result = []
 
 for i in range(0,25):
    final_rank_result.append(sorted_rank_result[i])
- 
+
 for node_id,rank_value in final_rank_result:
    plpy.execute(plan,[node_id,rank_value])
 
